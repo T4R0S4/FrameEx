@@ -1,4 +1,3 @@
-# app.py
 import streamlit as st
 from moviepy.editor import VideoFileClip
 from PIL import Image
@@ -25,16 +24,15 @@ if video_file:
         st.subheader("🎞️ Select Frames to Extract")
 
         selected_frames = []
-        cols = st.columns(6)  # 6 thumbnails per row
-        every_nth = 10  # Show every Nth frame to avoid lag
+        cols = st.columns(6)  # Grid: 6 thumbnails per row
 
-        for i in range(0, total_frames, every_nth):
+        for i in range(total_frames):
             frame_time = i / fps
             frame = clip.get_frame(frame_time)
             img = Image.fromarray(frame)
 
             with cols[i % 6]:
-                st.image(img, caption=f"Frame {i}", use_column_width=True)
+                st.image(img, caption=f"Frame {i}", use_container_width=True)
                 if st.checkbox(f"Select {i}", key=f"frame_{i}"):
                     selected_frames.append((i, img))
 
