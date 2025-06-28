@@ -5,7 +5,7 @@ import os
 import tempfile
 
 st.set_page_config(page_title="🎞️ Video Frame Extractor", layout="wide")
-st.title("🎞️ Video Frame Extractor (No OpenCV)")
+st.title("🎞️ Video Frame Extractor")
 
 video_file = st.file_uploader("📂 Upload a video", type=["mp4", "mov", "avi"])
 
