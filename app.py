@@ -23,7 +23,7 @@ if video_file:
         fps = clip.fps
         duration = clip.duration
         total_frames = int(fps * duration)
-        st.success(f"Video loaded. Duration: {duration:.2f}s | FPS: {fps:.2f} | Total Frames: {total_frames}")
+        st.success(f"🎥 Duration: {duration:.2f}s | FPS: {fps:.2f} | Total Frames: {total_frames}")
 
         st.subheader("🎞️ Select Frames to Download")
 
@@ -40,6 +40,7 @@ if video_file:
                 if select_all_flag or st.checkbox(f"Select {i}", key=f"frame_{i}"):
                     selected_frames.append((i, img))
 
+        # Process selected frames
         if selected_frames:
             output_dir = tempfile.mkdtemp()
             file_paths = []
@@ -48,7 +49,7 @@ if video_file:
                 img.save(file_path)
                 file_paths.append(file_path)
 
-            # ZIP if more than 5, otherwise individual downloads
+            # Generate download button HTML
             if len(file_paths) > 5:
                 zip_path = os.path.join(output_dir, "selected_frames.zip")
                 with zipfile.ZipFile(zip_path, 'w') as zipf:
@@ -57,44 +58,46 @@ if video_file:
 
                 with open(zip_path, "rb") as f:
                     b64 = base64.b64encode(f.read()).decode()
-                    href = f'<a href="data:application/zip;base64,{b64}" download="selected_frames.zip" class="floating-btn">⬇️ Download ZIP ({len(file_paths)} frames)</a>'
-
-                # Inject ZIP download button
-                st.markdown(
-                    f"""
-                    <style>
-                    .floating-btn {{
-                        position: fixed;
-                        bottom: 60px;
-                        right: 30px;
-                        background-color: #0066cc;
-                        color: white;
-                        padding: 12px 20px;
-                        border-radius: 30px;
-                        text-decoration: none;
-                        font-weight: bold;
-                        font-size: 16px;
-                        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-                        z-index: 9999;
-                    }}
-                    .floating-btn:hover {{
-                        background-color: #004d99;
-                        color: white;
-                    }}
-                    </style>
-                    {href}
-                    """,
-                    unsafe_allow_html=True
-                )
-
+                    href = f'<a href="data:application/zip;base64,{b64}" download="selected_frames.zip" class="floating-btn">⬇️ Download {len(file_paths)} Frames (ZIP)</a>'
             else:
-                st.markdown("### ⬇️ Download Selected Frames:")
+                # Generate single combined button for all frames
+                buttons = ""
                 for path in file_paths:
                     with open(path, "rb") as f:
                         b64 = base64.b64encode(f.read()).decode()
                         fname = os.path.basename(path)
-                        href = f'<a href="data:image/png;base64,{b64}" download="{fname}">🖼️ {fname}</a>'
-                        st.markdown(href, unsafe_allow_html=True)
+                        buttons += f'<a href="data:image/png;base64,{b64}" download="{fname}" class="floating-btn">{fname}</a><br>'
+                href = buttons
+
+            # Inject floating button
+            st.markdown(
+                f"""
+                <style>
+                .floating-btn {{
+                    position: fixed;
+                    bottom: 60px;
+                    right: 30px;
+                    background: linear-gradient(90deg, #1e90ff, #0066cc);
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 30px;
+                    text-decoration: none;
+                    font-weight: bold;
+                    font-size: 15px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                    transition: background 0.3s ease;
+                    z-index: 9999;
+                    display: inline-block;
+                }}
+                .floating-btn:hover {{
+                    background: linear-gradient(90deg, #0066cc, #1e90ff);
+                    color: white;
+                }}
+                </style>
+                {href}
+                """,
+                unsafe_allow_html=True
+            )
 
     finally:
         clip.close()
