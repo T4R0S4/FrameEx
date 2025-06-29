@@ -41,14 +41,14 @@ if video_file:
                     selected_frames.append((i, img))
 
         if selected_frames:
-            # Simpan frame
             output_dir = tempfile.mkdtemp()
             file_paths = []
             for idx, img in selected_frames:
-                path = os.path.join(output_dir, f"frame_{idx:04d}.png")
-                img.save(path)
-                file_paths.append(path)
+                file_path = os.path.join(output_dir, f"frame_{idx:04d}.png")
+                img.save(file_path)
+                file_paths.append(file_path)
 
+            # ZIP if more than 5, otherwise individual downloads
             if len(file_paths) > 5:
                 zip_path = os.path.join(output_dir, "selected_frames.zip")
                 with zipfile.ZipFile(zip_path, 'w') as zipf:
@@ -58,38 +58,43 @@ if video_file:
                 with open(zip_path, "rb") as f:
                     b64 = base64.b64encode(f.read()).decode()
                     href = f'<a href="data:application/zip;base64,{b64}" download="selected_frames.zip" class="floating-btn">⬇️ Download ZIP ({len(file_paths)} frames)</a>'
-            else:
-                f = open(file_paths[0], "rb")
-                b64 = base64.b64encode(f.read()).decode()
-                fname = os.path.basename(file_paths[0])
-                href = f'<a href="data:image/png;base64,{b64}" download="{fname}" class="floating-btn">⬇️ Download Frame</a>'
 
-            # Inject download button
-            st.markdown(
-                f"""
-                <style>
-                .floating-btn {{
-                    position: fixed;
-                    bottom: 30px;
-                    right: 30px;
-                    background-color: #0066cc;
-                    color: white;
-                    padding: 12px 20px;
-                    border-radius: 30px;
-                    text-decoration: none;
-                    font-weight: bold;
-                    font-size: 16px;
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-                    z-index: 9999;
-                }}
-                .floating-btn:hover {{
-                    background-color: #004d99;
-                }}
-                </style>
-                {href}
-                """,
-                unsafe_allow_html=True
-            )
+                # Inject ZIP download button
+                st.markdown(
+                    f"""
+                    <style>
+                    .floating-btn {{
+                        position: fixed;
+                        bottom: 60px;
+                        right: 30px;
+                        background-color: #0066cc;
+                        color: white;
+                        padding: 12px 20px;
+                        border-radius: 30px;
+                        text-decoration: none;
+                        font-weight: bold;
+                        font-size: 16px;
+                        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                        z-index: 9999;
+                    }}
+                    .floating-btn:hover {{
+                        background-color: #004d99;
+                        color: white;
+                    }}
+                    </style>
+                    {href}
+                    """,
+                    unsafe_allow_html=True
+                )
+
+            else:
+                st.markdown("### ⬇️ Download Selected Frames:")
+                for path in file_paths:
+                    with open(path, "rb") as f:
+                        b64 = base64.b64encode(f.read()).decode()
+                        fname = os.path.basename(path)
+                        href = f'<a href="data:image/png;base64,{b64}" download="{fname}">🖼️ {fname}</a>'
+                        st.markdown(href, unsafe_allow_html=True)
 
     finally:
         clip.close()
